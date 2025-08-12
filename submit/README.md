@@ -66,17 +66,36 @@ The SCMS-PINN model achieves:
 - Linux/Unix environment
 
 ### Python Dependencies
-All required packages are listed in `requirements.txt`. Key dependencies include:
-- **PyTorch 2.3.1**: Deep learning framework with CUDA 12.1 support
-- **NumPy 2.1.2**: Numerical computing
-- **SciPy 1.16.0**: Scientific computing utilities
-- **Matplotlib 3.10.3**: Visualization
-- **SymPy 1.13.3**: Symbolic mathematics for physics calculations
+All required packages are listed in `requirements.txt`. The complete dependency list has been extracted from the verified virtual environment used for development.
 
-To install all dependencies:
+#### Core Dependencies:
+- **PyTorch 2.3.1+cu121**: Deep learning framework with CUDA 12.1 support
+- **NumPy 2.1.2**: Numerical computing and array operations
+- **SciPy 1.16.0**: Scientific computing utilities
+- **Matplotlib 3.10.3**: Publication-quality figure generation
+- **Pandas 2.3.1**: Data manipulation and analysis
+
+#### Additional Libraries:
+- **SymPy 1.13.3**: Symbolic mathematics for physics calculations
+- **Plotly 6.2.0**: Interactive visualizations
+- **Scikit-learn 1.7.1**: Machine learning utilities
+- **Seaborn 0.13.2**: Statistical data visualization
+- **NetworkX 3.3**: Graph and network analysis
+
+### Installation
+
+1. **Create a virtual environment** (recommended):
+```bash
+python -m venv venv
+source venv/bin/activate  # On Linux/Mac
+```
+
+2. **Install dependencies**:
 ```bash
 pip install -r requirements.txt
 ```
+
+Note: For CPU-only installation, replace the PyTorch packages in requirements.txt with CPU versions
 
 For GPU support, ensure you have CUDA 12.1 installed:
 ```bash
