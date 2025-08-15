@@ -18,15 +18,59 @@ This repository contains the implementation of Symmetry-Constrained Multi-Scale 
 
 ## Mathematical Formulation
 
-The SCMS-PINN solves the tight-binding Hamiltonian for graphene:
+### Tight-Binding Model
+The SCMS-PINN is designed to learn the electronic band structure of graphene, which in the tight-binding approximation is given by:
+
 ```
-H = -t ∑_{<i,j>} (a†ᵢbⱼ + b†ⱼaᵢ)
+E_TB(k) = ±t√[3 + 2cos(√3k_y a) + 4cos(√3k_y a/2)cos(3k_x a/2)]
 ```
 
 Where:
-- `t` - nearest-neighbor hopping parameter (2.7 eV)
-- `a†ᵢ, aᵢ` - creation/annihilation operators on sublattice A
-- `b†ⱼ, bⱼ` - creation/annihilation operators on sublattice B
+- `t ≈ 2.7 eV` - nearest-neighbor hopping parameter
+- `a = 2.46 Å` - lattice constant
+- The ± signs correspond to conduction/valence bands
+
+### Physics-Informed Feature Extraction
+The neural network transforms raw k-points (k_x, k_y) into physics-aware features:
+
+```
+h₁ = φ_physics(k_x, k_y) = [|k|, θ_k, {|k-K_i|}₆, {cos(nθ_k)}₆, {sin(nθ_k)}₆]
+```
+
+These 31 features encode:
+- Radial distance `|k|` and polar angle `θ_k`
+- Distances to six K points (Dirac points)
+- Six-fold rotational harmonics for C₆ᵥ symmetry
+
+### Key Theorems
+
+#### Theorem 1: Multi-Head ResNet Learning Capability
+A multi-head neural network with physics-informed features, three specialized ResNet-6 heads (width ≥256), and adaptive blending can approximate any continuous band structure E(k) to arbitrary accuracy ε>0.
+
+#### Theorem 2: Exact Symmetry Preservation
+The group averaging operation guarantees exact C₆ᵥ symmetry:
+```
+E_sym(k) = (1/12) Σ_{g∈C₆ᵥ} E_NN(R_g k)
+```
+This ensures crystallographic symmetry independent of network architecture.
+
+#### Theorem 3: Progressive Dirac Point Convergence
+With progressive weight scheduling ω_K = {5, 12, 25} at epochs {0, 50, 150}, the expected Dirac loss converges as:
+```
+E[L_Dirac(T)] ≤ C/√T + ε_approx
+```
+
+### Loss Function Design
+The training employs a multi-component loss with progressive strengthening:
+
+```
+L_total = L_data + ω_K(t)L_Dirac + ω_FV(t)L_Fermi + L_anchor + L_reg
+```
+
+Where:
+- `L_Dirac` enforces zero gap at K points
+- `L_Fermi` constrains Fermi velocity v_F ≈ 10⁶ m/s
+- Progressive weights prevent training instabilities
 
 ## Repository Structure
 
@@ -95,11 +139,31 @@ The SCMS-PINN model achieves:
 
 ## Methodology Highlights
 
-- **Symmetry Enforcement**: Hard constraints for D6h point group operations
-- **Multi-Scale Architecture**: Separate networks for low/high energy regions
-- **Adaptive Loss Weighting**: Dynamic adjustment based on physics metrics
-- **Self-Consistent Iteration**: Ensures physical consistency across scales
-- **Comprehensive Validation**: 15+ physics-based validation metrics
+### Multi-Head Architecture
+Each specialized head employs ResNet-6 architecture with residual blocks:
+```
+h_{i+1} = h_i + F_i(h_i; θ_i)
+```
+- **K-Head**: Captures linear dispersion near Dirac points
+- **M-Head**: Models saddle point behavior at M point  
+- **General Head**: Smooth interpolation across Brillouin zone
+
+### Adaptive Blending
+Dynamic combination of head outputs:
+```
+E(k) = w_K(k)E^K(k) + w_M(k)E^M(k) + w_G(k)E^G(k)
+```
+Transitions from soft weighting to hard assignment at epoch 150.
+
+### Progressive Training Schedule
+- **Epochs 0-50**: ω_K=5, mild Dirac constraint for exploration
+- **Epochs 50-150**: ω_K=12, head specialization phase
+- **Epochs 150+**: ω_K=25, strong physics enforcement
+
+### Exact Symmetry Enforcement
+- Post-processing with all 12 C₆ᵥ operations (6 rotations + 6 reflections)
+- Guarantees crystallographic symmetry without training instability
+- Decouples learning from symmetry constraints
 
 ## Key Innovations
 
