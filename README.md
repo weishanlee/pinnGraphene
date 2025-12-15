@@ -192,7 +192,7 @@ If you use this code in your research, please cite our paper:
 - I Hang Kwok - Pui Ching Middle School Macau
 - Kam Ian Leong - Pui Ching Middle School Macau  
 - Chi Kiu Althina Chau - Pui Ching Middle School Macau
-- Kei Chon Sio - University of Toronto Mississauga
+- Kei Chon Sio (keichonsio1114@gmail.com) - University of Toronto Mississauga
 
 ## License
 
